@@ -53,3 +53,12 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+
+# Local binaries
+client
+server
+
+# Log files
+*.log
+client_logs/
