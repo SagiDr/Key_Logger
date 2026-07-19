@@ -1,12 +1,5 @@
 #include "server.h"
 
-/* Structure containing client connection information, updated to hold UUID metadata */
-typedef struct {
-    int socket_fd;
-    char ip_address[INET_ADDRSTRLEN];
-    char uuid[64]; 
-} ExtendedClientData;
-
 /* Creates or opens a persistent log file based strictly on the client's unique UUID */
 FILE* get_or_create_uuid_log(const char* uuid) {
     struct stat st = {0};
