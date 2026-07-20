@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <xkbcommon/xkbcommon.h>
 
-#define SERVER_IP "10.0.2.15" // The IP address of the remote server.
+#define SERVER_IP "192.168.56.101" // The IP address of the remote server.
 #define SERVER_PORT 4444 // The port used for communication.
 #define NETLINK_PROTOCOL 31 // The Netlink protocol number.
 #define NETLINK_GROUP_ID 1 // The Netlink multicast group ID.
