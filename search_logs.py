@@ -4,7 +4,8 @@ import re #importing the re module for regular expression operations
 def clean_log_line(line):
     """Cleans up log commands to provide a more readable text output."""
     # Replace deletion markers with a visual symbol and remove modifier tags
-    line = line.replace("[DEL]", " ⌫ ") #
+    line = line.replace("[SPACE]", " ")
+    line = line.replace("[ENTER]", "\n")
     # Strip special key tags that clutter the readability
     line = re.sub(r"\[L_SHIFT\]|\[R_SHIFT\]|\[L_CTRL\]|\[R_CTRL\]", "", line)
     return line
@@ -18,7 +19,7 @@ def search_in_log(file_path, keyword):
             print(f"{'='*20}\n")
             
             found = False
-            for line_number, line in enumerate(file, 1):
+            for line_number, line in enumerate(file, 1): //
                 # Search for the keyword case-insensitively
                 if re.search(keyword, line, re.IGNORECASE):
                     cleaned = clean_log_line(line.strip())

