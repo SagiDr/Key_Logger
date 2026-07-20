@@ -1,12 +1,12 @@
 #define _GNU_SOURCE
-#include <dlfcn.h>
-#include <string.h>
-#include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include <dlfcn.h> //for dynamic symbol resolution (dlsym)
+#include <string.h> //for string manipulation functions (strstr, strcmp)
+#include <dirent.h> //for directory stream operations (readdir, readdir64)
+#include <stdio.h> //for file I/O operations (fgets, FILE)
+#include <stdlib.h> //for memory allocation (malloc, free)
+#include <ctype.h> //for character type checks (isdigit)
+#include <unistd.h> //for low-level file descriptor operations (read, close)
+#include <fcntl.h> //for file control options (open, O_RDONLY)
 
 /**
  * @brief Checks if a given name or string matches obfuscated blacklisted signatures.
