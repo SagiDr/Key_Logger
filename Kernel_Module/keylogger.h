@@ -16,8 +16,6 @@
 #define KEY_REPEATED_STATE 2 // Input subsystem value representing a key repeat event (holding down a key).
 
 
-extern struct sock *netlink_socket;
-
 /**
  * @brief Broadcasts the captured keycode to userspace listeners.
  * @param keycode The raw input keycode captured from the keyboard.
